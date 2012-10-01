@@ -1,0 +1,20 @@
+{
+    "name": "monastery"
+  , "version": "0.0.1"
+  , "description": "Barebone models for monk"
+  , "main": "lib/index.js"
+  , "scripts": {
+        "test": "mocha -R spec"
+    }
+  , "keywords": ["monk", "mongodb", "model", "odm", "orm", "mongo"]
+  , "author": "Jerome Gravel-Niquet"
+  , "license": "MIT"
+
+  , "dependencies": {
+        "monk": "~0.3.0"
+    }
+  , "devDependencies": {
+        "mocha": "*"
+      , "chai" : "*"
+    }
+}

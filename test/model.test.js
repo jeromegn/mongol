@@ -26,33 +26,41 @@ describe("Model", function(){
     });
   });
 
-  describe("instance w/ defaults", function(){
+  describe("instance w/ schema", function(){
     var c = function(){
       return this.a;
     }
 
-    var M = new Model("models", {
+    var schema = {
         a: "a"
       , b: "b"
-      , c: c
-    });
+      , c: {type: String, default: c}
+      , d: {type: Date, default: Date.now}
+      , e: Array
+      , obj: {
+          is: "not a sub schema"
+        }
+      , sub: {
+          is: { type: String, default: "a sub schema" }
+        }
+    }
 
-    it("should set those defaults to the constructor", function(){
-      assert.deepEqual(M.defaults, {
-          a: "a"
-        , b: "b"
-        , c: c
-      });
+    var M = new Model("models", schema);
+
+    it("should set the schema on the constructor", function(){
+      assert.deepEqual(M.schema, schema);
     });
 
     describe("instance", function(){
       var m = new M();
-      it("should apply the defaults to the instance", function(){
-        assert.deepEqual(m, {
-            a: "a"
-          , b: "b"
-          , c: "a"
-        });
+      it("should apply the schema to the instance", function(){
+        assert.equal(m.a, "a");
+        assert.equal(m.b, "b");
+        assert.equal(m.c, "a");
+        assert.instanceOf(m.d, Date);
+        assert.isUndefined(m.e);
+        assert.equal(m.obj.is, "not a sub schema");
+        assert.equal(m.sub.is, "a sub schema");
       });
     });
   });
@@ -75,7 +83,7 @@ describe("Model", function(){
     B.prototype.test2 = test2;
 
     it("should inherit the defaults from the parent and merge them", function(){
-      assert.deepEqual(B.defaults, {a: "a", b: "b"});
+      assert.deepEqual(B.schema, {a: "a", b: "b"});
     });
 
     describe("instance", function(){
@@ -99,16 +107,59 @@ describe("Model", function(){
 
     var A = new Model("a", {
         def: true
+      , not_def: false
+      , count: Number
     });
 
-    describe("using callbacks", function(){
-      describe("create", function(){
-        var promise
-          , a;
+    describe("create", function(){
+      var promise
+        , a;
+
+      before(function(done){
+        promise = A.create({str: "is a string", not_def: true}, function(error, doc){
+          a = doc;
+          done();
+        });
+      });
+
+      it("should return a promise", function(){
+        assert.instanceOf(promise, monk.Promise);
+      });
+      it("should be an instance of the model", function(){
+        assert.instanceOf(a, A);
+      });
+
+      it("should have an ID", function(){
+        assert.isDefined(a._id);
+      });
+      it("should have the defaults applied", function(){
+        assert.equal(a.def, true);
+      });
+      it("should have its properties applied", function(){
+        assert.equal(a.str, "is a string");
+      });
+      it("should not override the property if set, even with a default", function(){
+        assert.equal(a.not_def, true);
+      });
+
+    });
+
+    describe("querying", function(){
+      var a;
+
+      before(function(done){
+        A.create({str: "it's another string!", count: "1"}, function(error, doc){
+          a = doc;
+          done();
+        });
+      });
+
+      describe("find one", function(){
+        var promise, a2;
 
         before(function(done){
-          promise = A.create({str: "is a string"}, function(error, doc){
-            a = doc;
+          promise = A.findOne({str: a.str}, function(error, doc){
+            a2 = doc;
             done();
           });
         });
@@ -117,133 +168,74 @@ describe("Model", function(){
           assert.instanceOf(promise, monk.Promise);
         });
         it("should be an instance of the model", function(){
-          assert.instanceOf(a, A);
+          assert.instanceOf(a2, A);
         });
-
-        it("should have an ID", function(){
-          assert.isDefined(a._id);
-        });
-        it("should have the defaults applied", function(){
-          assert.equal(a.def, true);
-        });
-        it("should have its properties applied", function(){
-          assert.equal(a.str, "is a string");
+        it("should cast the values in the correct type", function(){
+          assert.strictEqual(a2.count, 1);
         });
 
       });
 
-      describe("querying", function(){
-        var a;
+      describe("find by Id", function(){
+        var promise, a2;
 
         before(function(done){
-          A.create({str: "it's another string!"}, function(error, doc){
-            a = doc;
+          promise = A.findById(a._id, function(error, doc){
+            a2 = doc;
             done();
           });
         });
 
-        describe("find one", function(){
-          var promise, a2;
-
-          before(function(done){
-            promise = A.findOne({str: a.str}, function(error, doc){
-              a2 = doc;
-              done();
-            });
-          });
-
-          it("should return a promise", function(){
-            assert.instanceOf(promise, monk.Promise);
-          });
-          it("should be an instance of the model", function(){
-            assert.instanceOf(a2, A);
-          });
-
+        it("should return a promise", function(){
+          assert.instanceOf(promise, monk.Promise);
         });
-
-        describe("find by Id", function(){
-          var promise, a2;
-
-          before(function(done){
-            promise = A.findById(a._id, function(error, doc){
-              a2 = doc;
-              done();
-            });
-          });
-
-          it("should return a promise", function(){
-            assert.instanceOf(promise, monk.Promise);
-          });
-          it("should be an instance of the model", function(){
-            assert.instanceOf(a2, A);
-          });
-
-        });
-
-        describe("find and modify", function(){
-          var promise, a2;
-
-          before(function(done){
-            promise = A.findAndModify({_id: a._id}, {$set: {new_val: "it's new!"}}, {new: true}, function(error, doc){
-              a2 = doc;
-              done();
-            });
-          });
-
-          it("should return a promise", function(){
-            assert.instanceOf(promise, monk.Promise);
-          });
-          it("should be an instance of the model", function(){
-            assert.instanceOf(a2, A);
-          });
-          it("should have the new data", function(){
-            assert.equal(a2.new_val, "it's new!");
-          });
-        });
-        
-        describe("update", function(){
-          var promise, a2;
-
-          before(function(done){
-            promise = A.update({_id: a._id}, {$set: {test: "it's new!"}}, function(error, updated){
-              a2 = updated;
-              done();
-            });
-          });
-
-          it("should return a promise", function(){
-            assert.instanceOf(promise, monk.Promise);
-          });
-          it("should have updated one record", function(){
-            assert.strictEqual(a2, 1);
-          });
-          it("should not be an instance of the model", function(){
-            assert.notInstanceOf(a2, A);
-          });
-        });
-      });
-    });
-
-    describe("using promises", function(){
-
-      describe("create", function(){
-        
-        var a;
-
-        before(function(done){
-          var create = A.create({})
-          create.on("success", function(doc){
-            a = doc;
-            done();
-          });
-        });
-
         it("should be an instance of the model", function(){
-          assert.instanceOf(a, A);
+          assert.instanceOf(a2, A);
         });
 
       });
 
+      describe("find and modify", function(){
+        var promise, a2;
+
+        before(function(done){
+          promise = A.findAndModify({_id: a._id}, {$set: {new_val: "it's new!"}}, {new: true}, function(error, doc){
+            a2 = doc;
+            done();
+          });
+        });
+
+        it("should return a promise", function(){
+          assert.instanceOf(promise, monk.Promise);
+        });
+        it("should be an instance of the model", function(){
+          assert.instanceOf(a2, A);
+        });
+        it("should have the new data", function(){
+          assert.equal(a2.new_val, "it's new!");
+        });
+      });
+      
+      describe("update", function(){
+        var promise, a2;
+
+        before(function(done){
+          promise = A.update({_id: a._id}, {$set: {test: "it's new!"}}, function(error, updated){
+            a2 = updated;
+            done();
+          });
+        });
+
+        it("should return a promise", function(){
+          assert.instanceOf(promise, monk.Promise);
+        });
+        it("should have updated one record", function(){
+          assert.strictEqual(a2, 1);
+        });
+        it("should not be an instance of the model", function(){
+          assert.notInstanceOf(a2, A);
+        });
+      });
     });
   });
 });

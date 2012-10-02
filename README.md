@@ -72,28 +72,28 @@ You should pass an error to the callback if there is one. The operations will be
 
 Refers to the moment of instantiation of your object.
 
-`before`: your schema is not applied yet, `this` refers to a raw object. 
+`before`: your schema is not applied yet, `this` refers to a raw object.  
 `after`: your schema has been applied, `this` refers to your instance.
 
 #### insert
 
 Refers to the moment when a record is inserted.
 
-`before`: your instance is about to be inserted into the database. 
+`before`: your instance is about to be inserted into the database.  
 `after`: your instance has been inserted.
 
 #### update
 
 Refers to the moment when a record is updated either via `update` or `findAndModify`.
 
-`before`: your instance is about to be updated in the database. 
+`before`: your instance is about to be updated in the database.  
 `after`: your instance has been updated.
 
 #### Remove
 
 Refers to the moment when a record is removed.
 
-`before`: your instance is about to be removed from the database. 
+`before`: your instance is about to be removed from the database.  
 `after`: your instance has been removed.
 
 ## Contributing

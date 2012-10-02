@@ -238,4 +238,38 @@ describe("Model", function(){
       });
     });
   });
+
+  describe("w/ hooks", function(){
+    var X = new Model("hooked", {
+      def: "some string"
+    });
+
+    X.before("insert", function(done){
+      this.another = "property";
+      done();
+    });
+
+    X.after("insert", function(done){
+      this.someVirtual = "this is a virtual";
+      done();
+    });
+
+    describe("insert", function(){
+      var x;
+      before(function (done){
+        X.insert({}, function(error, doc){
+          x = doc;
+          done();
+        });
+      });
+
+      it("should have ran the `before` hook", function(){
+        assert.equal(x.another, "property");
+      });
+      it("should have ran the `after` hook", function(){
+        assert.equal(x.someVirtual, "this is a virtual");
+      });
+
+    });
+  });
 });

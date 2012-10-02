@@ -11,7 +11,8 @@
   , "license": "MIT"
 
   , "dependencies": {
-        "monk": "~0.3.0"
+        "monk" : "~0.3.0"
+      , "async": "*"
     }
   , "devDependencies": {
         "mocha": "*"

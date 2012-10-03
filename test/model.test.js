@@ -74,9 +74,9 @@ describe("Model", function(){
 
     A.prototype.test = test;
 
-    var B = new Model(A, "models", {
+    var B = new Model("models", {
       b: "b"
-    });
+    }).includes(A);
 
     var test2 = function(){};
 
@@ -111,12 +111,12 @@ describe("Model", function(){
       , count: Number
     });
 
-    describe("create", function(){
+    describe("insert", function(){
       var promise
         , a;
 
       before(function(done){
-        promise = A.create({str: "is a string", not_def: true}, function(error, doc){
+        promise = A.insert({str: "is a string", not_def: true}, function(error, doc){
           a = doc;
           done();
         });
@@ -148,7 +148,7 @@ describe("Model", function(){
       var a;
 
       before(function(done){
-        A.create({str: "it's another string!", count: "1"}, function(error, doc){
+        A.insert({str: "it's another string!", count: "1"}, function(error, doc){
           a = doc;
           done();
         });
@@ -244,18 +244,25 @@ describe("Model", function(){
       def: "some string"
     });
 
-    X.before("insert", function(done){
-      this.another = "property";
-      done();
-    });
-
-    X.after("insert", function(done){
-      this.someVirtual = "this is a virtual";
-      done();
-    });
+    var x;
 
     describe("insert", function(){
-      var x;
+      var beforeInsert, afterInsert;
+
+      before(function(){
+        X.before("insert", function(done){
+          beforeInsert = Object.clone(this);
+          this.another = "property";
+          done();
+        });
+
+        X.after("insert", function(done){
+          afterInsert = Object.clone(this);
+          this.someVirtual = "this is a virtual";
+          done();
+        });
+      });
+
       before(function (done){
         X.insert({}, function(error, doc){
           x = doc;
@@ -263,13 +270,73 @@ describe("Model", function(){
         });
       });
 
-      it("should have ran the `before` hook", function(){
-        assert.equal(x.another, "property");
-      });
-      it("should have ran the `after` hook", function(){
-        assert.equal(x.someVirtual, "this is a virtual");
+      describe("before", function(){
+        it("should have ran the hook", function(){
+          assert.equal(x.another, "property");
+        });
+        it("should not have inserted the document", function(){
+          assert.isUndefined(beforeInsert._id);
+        });
+        it("should not have ran the `after` hook", function(){
+          assert.isUndefined(beforeInsert.someVirtual);
+        });
       });
 
+      describe("after", function(){
+        it("should have ran the hook", function(){
+          assert.equal(x.someVirtual, "this is a virtual");
+        });
+        it("should have inserted the document", function(){
+          assert.isDefined(afterInsert._id);
+        });
+      });
+
+    });
+
+    describe("load", function(){
+      var beforeLoad, afterLoad;
+
+      before(function(){
+        X.before("load", function(done){
+          beforeLoad = this;
+          this.changedBefore = true;
+          done();
+        });
+
+        X.after("load", function(done){
+          afterLoad = this;
+          this.changedAfter = false;
+          done();
+        });
+      });
+
+      before(function (done){
+        X.findById(x._id, function(error, doc){
+          x = doc;
+          done();
+        });
+      });
+
+      describe("before", function(){
+        it("should have ran the hook", function(){
+          assert.equal(x.changedBefore, true);
+        });
+        it("should be raw data", function(){
+          assert.notInstanceOf(beforeLoad, X);
+        });
+        it("should not have ran the `after` hook", function(){
+          assert.isUndefined(beforeLoad.changedAfter);
+        });
+      });
+
+      describe("after", function(){
+        it("should have ran the hook", function(){
+          assert.equal(x.changedAfter, false);
+        });
+        it("should have instantiated the instance", function(){
+          assert.instanceOf(afterLoad, X);
+        });
+      });
     });
   });
 });

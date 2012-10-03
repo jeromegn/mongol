@@ -30,10 +30,25 @@ User.prototype.firstName = function(){
 }
 ```
 
-### Creating an instance
+### Model inheritance
+
+If you need models that are extensions of a more general model, you can inherit from another `Model` like so:
 
 ```javascript
-User.create({
+var Doc = new Model("docs", {
+  comments: Array
+  author: Model.ObjectId
+});
+
+var Article = new Model("docs", {
+  _type: "article"
+}).includes(Doc);
+```
+
+### Creating (inserting) an instance
+
+```javascript
+User.insert({
 
     email: john@doe.com
   , name: "John Doe"
@@ -89,7 +104,7 @@ Refers to the moment when a record is updated either via `update` or `findAndMod
 `before`: your instance is about to be updated in the database.  
 `after`: your instance has been updated.
 
-#### Remove
+#### remove
 
 Refers to the moment when a record is removed.
 

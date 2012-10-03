@@ -14,6 +14,8 @@ Provide basic modeling functionalities for mongodb while keeping the power of ra
 
 ### Defining a Model
 
+It's very similar to how you'd define a schema with mongoose:
+
 ```javascript
 var Model = require("monastery")("localhost/db_name");
 
@@ -24,11 +26,38 @@ var User = new Model("users", {
 
   , created_at: { type: Date, default: Date.now }
 });
+```
 
+Except your Model works like it should: prototypal inheritance.
+
+```
 User.prototype.firstName = function(){
   return this.name.split(" ")[0];
 }
 ```
+
+### Embedded
+
+You may define embedded documents just like you'd define a Model or just like you'd define a field.
+
+```javascript
+var Post = new Model("posts", {
+    title: String
+  , slug: String
+
+  , author: Model.ObjectID
+
+  , comments: [{
+        author: Model.ObjectID
+      , content: String
+      , created_at: { type: Date, default: Date.now }
+    }]
+
+  , likes: [Model.ObjectID] // Casts any value in there as a MongoDB ObjectID
+})
+```
+
+The documents will be casted according to your schema.
 
 ### Model inheritance
 
@@ -52,10 +81,10 @@ User.insert({
 
     email: john@doe.com
   , name: "John Doe"
-  , password_hash: "123rjsahds" // Just use `bcrypt` though...
+  , password: "password123" // Just use `bcrypt`, example below...
 
 }, function(error, user) {
-  // `user` is an instanceof User
+  // user instanceof User => true
   console.log(user.firstName()); // => "John"
 });
 ```
@@ -70,14 +99,22 @@ Furthermore, they also all return a `promise`, just like monk.
 
 A hook is a mechanism to perform some actions or alter some data before or after some event. Hooks are all asynchronous and therefore must call the provided callback. Available hooks are: "load", "insert", "update" and "remove".
 
+Actually **useful** examples:
+
 ```javascript
 User.before("insert", function(done){
-  this.changeThis = "to this";
-  done();
+  bcrypt.hash(this.password, 10, function(error, hash){
+    if (error)
+      return done(error);
+
+    this.password_hash = hash;
+    delete this.password; // You wouldn't want to store that!
+    done();
+  });
 });
 
 User.after("remove", function(done){
-  deleteSomeOtherRecordOrSomething(done);
+  Post.remove({author: this._id}, done);
 });
 ```
 

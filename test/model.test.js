@@ -43,6 +43,18 @@ describe("Model", function(){
       , sub: {
           is: { type: String, default: "a sub schema" }
         }
+      , some_id: Model.ObjectID
+      , embedded: [
+          {
+              a: "a"
+            , b: "b"
+            , c: {type: String, default: c}
+            , d: {type: Date, default: Date.now}
+            , e: Array
+          }
+        ]
+      , embed_nums: [Number]
+      , ids: [Model.ObjectID]
     }
 
     var M = new Model("models", schema);
@@ -53,6 +65,7 @@ describe("Model", function(){
 
     describe("instance", function(){
       var m = new M();
+
       it("should apply the schema to the instance", function(){
         assert.equal(m.a, "a");
         assert.equal(m.b, "b");
@@ -61,6 +74,54 @@ describe("Model", function(){
         assert.isUndefined(m.e);
         assert.equal(m.obj.is, "not a sub schema");
         assert.equal(m.sub.is, "a sub schema");
+        assert.isUndefined(m.some_id);
+
+        assert.isUndefined(m.embedded);
+        assert.isUndefined(m.embed_nums);
+        assert.isUndefined(m.ids);
+      });
+    });
+
+    describe("instance w/ embedded docs", function(){
+      var m = new M({
+          embedded: [
+              { a: "test" }
+            , {}
+          ]
+        , embed_nums: ["10", "20", 30]
+        , ids: ["4e4e1638c85e808431000003", Model.ObjectID("4e4e1638c85e808431000003")]
+      });
+
+      it("should apply the embedded schema too", function(){
+        assert.equal(m.a, "a");
+        assert.equal(m.b, "b");
+        assert.equal(m.c, "a");
+        assert.instanceOf(m.d, Date);
+        assert.isUndefined(m.e);
+        assert.equal(m.obj.is, "not a sub schema");
+        assert.equal(m.sub.is, "a sub schema");
+
+        assert.isArray(m.embedded);
+          assert.equal(m.embedded[0].a, "test");
+          assert.equal(m.embedded[0].b, "b");
+          assert.equal(m.embedded[0].c, "a");
+          assert.instanceOf(m.embedded[0].d, Date);
+          assert.isUndefined(m.embedded[0].e);
+
+          assert.equal(m.embedded[1].a, "a");
+          assert.equal(m.embedded[1].b, "b");
+          assert.equal(m.embedded[1].c, "a");
+          assert.instanceOf(m.embedded[1].d, Date);
+          assert.isUndefined(m.embedded[1].e);
+
+        assert.isArray(m.embed_nums);
+          assert.strictEqual(m.embed_nums[0], 10);
+          assert.strictEqual(m.embed_nums[1], 20);
+          assert.strictEqual(m.embed_nums[2], 30);
+
+        assert.isArray(m.ids);
+          assert.instanceOf(m.ids[0], Model.ObjectID);
+          assert.instanceOf(m.ids[1], Model.ObjectID);
       });
     });
   });

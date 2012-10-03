@@ -61,7 +61,7 @@ The documents will be casted according to your schema.
 
 ### Model inheritance
 
-If you need models that are extensions of a more general model, you can inherit from another `Model` like so:
+If you need models that are extensions of a more general model, you can inherit from another `Model` by using `Model.prototype.inherits`:
 
 ```javascript
 var Doc = new Model("docs", {
@@ -71,7 +71,7 @@ var Doc = new Model("docs", {
 
 var Article = new Model("docs", {
   _type: "article"
-}).includes(Doc);
+}).inherits(Doc);
 ```
 
 ### Creating (inserting) an instance

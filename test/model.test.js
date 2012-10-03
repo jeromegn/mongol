@@ -137,7 +137,7 @@ describe("Model", function(){
 
     var B = new Model("models", {
       b: "b"
-    }).includes(A);
+    }).inherits(A);
 
     var test2 = function(){};
 

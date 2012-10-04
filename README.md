@@ -16,13 +16,34 @@ You're probably face palming yourself, wondering "why... oh why another mongodb 
 
 ## Usage
 
-### Defining a Model
+### Initialize
 
-It's very similar to how you'd define a schema with mongoose:
+Create a connection to the database and get the Model constructor by requiring `monastery`.
 
 ```javascript
-var Model = require("monastery")("localhost/db_name");
+var Monastery = require("monastery")("localhost/db_name");
+  , Model = Monastery.Model;
+```
 
+### Defining a `Model`
+
+```javascript
+var User = new Model("users");
+```
+
+Your `Model` works like a normal JavaScript object instance: prototypal inheritance.
+
+```
+User.prototype.firstName = function(){
+  return this.name.split(" ")[0];
+}
+```
+
+### Schema
+
+You may pass a schema as second argument when constructing a `new Model`. This will cast the provided data in the right type when saving to MongoDB.
+
+```javacript
 var User = new Model("users", {
     email: String
   , name: String
@@ -32,17 +53,11 @@ var User = new Model("users", {
 });
 ```
 
-Except your Model works like a normal JavaScript object instance: prototypal inheritance.
+*Note: As opposed to mongoose, schemas are not enforced. With an instance, you may add or remove any field present or not in the schema. Schemas' only use is typecasting.*
 
-```
-User.prototype.firstName = function(){
-  return this.name.split(" ")[0];
-}
-```
+#### Embedded documents
 
-### Embedded
-
-You may define embedded documents just like you'd define a Model or just like you'd define a field.
+You may define embedded documents' schema just like you'd define a `Model`'s schema.
 
 ```javascript
 var Post = new Model("posts", {
@@ -78,7 +93,7 @@ var Article = new Model("docs", {
 }).inherits(Doc);
 ```
 
-### Creating (inserting) an instance
+### Inserting an instance
 
 ```javascript
 User.insert({
@@ -181,10 +196,19 @@ Returning `false` will halt the hook queue. It will also halt the operation you 
 
 ## Contributing
 
-- Follow the coding style;
+- Find a relevant feature to add/remove/change or find a bug to fix (protip: look at the issues);
+- Code (while following the project's coding style);
 - Write tests;
 - Send a **self-contained** pull request.
 
 ## License
 
-TODO: Get license (MIT) from somewhere.
+Licensed under MIT license
+
+Copyright (c) 2012 Jerome Gravel-Niquet
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

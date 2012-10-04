@@ -4,7 +4,7 @@
   , "description": "Barebone models for monk"
   , "main": "lib/index.js"
   , "scripts": {
-        "test": "mocha -R spec -G"
+        "test": "mocha -R spec"
     }
   , "keywords": ["monk", "mongodb", "model", "odm", "orm", "mongo"]
   , "author": "Jerome Gravel-Niquet"

@@ -6,9 +6,7 @@ var helper = require("./helper")
 
 describe("Model", function(){
 
-  before(function(done){
-    Model.DB.driver.db.dropDatabase(done);
-  });
+  before(helper.clearDatabase);
 
   describe("instance", function(){
     var M = new Model("models");
@@ -295,107 +293,6 @@ describe("Model", function(){
         });
         it("should not be an instance of the model", function(){
           assert.notInstanceOf(a2, A);
-        });
-      });
-    });
-  });
-
-  describe("w/ hooks", function(){
-    var X = new Model("hooked", {
-      def: "some string"
-    });
-
-    var x;
-
-    describe("insert", function(){
-      var beforeInsert, afterInsert;
-
-      before(function(){
-        X.before("insert", function(done){
-          beforeInsert = Object.clone(this);
-          this.another = "property";
-          done();
-        });
-
-        X.after("insert", function(done){
-          afterInsert = Object.clone(this);
-          this.someVirtual = "this is a virtual";
-          done();
-        });
-      });
-
-      before(function (done){
-        X.insert({}, function(error, doc){
-          x = doc;
-          done();
-        });
-      });
-
-      describe("before", function(){
-        it("should have ran the hook", function(){
-          assert.equal(x.another, "property");
-        });
-        it("should not have inserted the document", function(){
-          assert.isUndefined(beforeInsert._id);
-        });
-        it("should not have ran the `after` hook", function(){
-          assert.isUndefined(beforeInsert.someVirtual);
-        });
-      });
-
-      describe("after", function(){
-        it("should have ran the hook", function(){
-          assert.equal(x.someVirtual, "this is a virtual");
-        });
-        it("should have inserted the document", function(){
-          assert.isDefined(afterInsert._id);
-        });
-      });
-
-    });
-
-    describe("load", function(){
-      var beforeLoad, afterLoad;
-
-      before(function(){
-        X.before("load", function(done){
-          beforeLoad = this;
-          this.changedBefore = true;
-          done();
-        });
-
-        X.after("load", function(done){
-          afterLoad = this;
-          this.changedAfter = false;
-          done();
-        });
-      });
-
-      before(function (done){
-        X.findById(x._id, function(error, doc){
-          x = doc;
-          done();
-        });
-      });
-
-      describe("before", function(){
-        it("should have ran the hook", function(){
-          assert.equal(x.changedBefore, true);
-        });
-        it("should be raw data", function(){
-          assert.notInstanceOf(beforeLoad, X);
-        });
-        it("should not have ran the `after` hook", function(){
-          assert.isUndefined(beforeLoad.changedAfter);
-        });
-      });
-
-      describe("after", function(){
-        it("should have ran the hook", function(){
-          assert.equal(x.changedAfter, false);
-        });
-        it("should have instantiated the instance", function(){
-          assert.instanceOf(afterLoad, X);
         });
       });
     });

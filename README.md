@@ -2,9 +2,13 @@
 
 Light modeling for MongoDB (using [monk](http://github.com/learnboost/monk)).
 
-## Goal
+You're probably face palming yourself, wondering "why... oh why another mongodb model library?". Read on.
 
-Provide basic modeling functionalities for mongodb while keeping the power of raw access to it.
+## Goals
+
+- Simple and flexible modeling;
+- Light codebase (just enough LOC, comprehensible, etc.);
+- No schema lock-in (they're just there to ensure the right type of data gets written).
 
 ## Install
 
@@ -28,7 +32,7 @@ var User = new Model("users", {
 });
 ```
 
-Except your Model works like it should: prototypal inheritance.
+Except your Model works like a normal JavaScript object instance: prototypal inheritance.
 
 ```
 User.prototype.firstName = function(){
@@ -112,47 +116,74 @@ User.before("insert", function(done){
     done();
   });
 });
+```
 
+You should pass an error to the callback if there is one. The operations will be alted.
+
+#### Sync
+
+Hooks can be sync (and will run one after the other).
+
+```javascript
+User.before("insert", function(){
+  this.prop = "some property value";
+});
+```
+
+#### Async
+
+Hooks can be async and will still run one after the other. Use a callback in your function like so:
+
+```javascript
 User.after("remove", function(done){
   Post.remove({author: this._id}, done);
 });
 ```
 
-You should pass an error to the callback if there is one. The operations will be alted.
+#### Async and parallel
 
-#### load
+Hooks can be called in parallel. **You need to use two callback for those to work!**
 
-Refers to the moment of instantiation of your object.
+```javascript
+User.before("insert", function(next, done){
+  // Call `next` whenever you want the next hook to start working
+  next(); // the next hook will start doing its thing right away.
+  somethingAsync(done);
+});
+```
 
-`before`: your schema is not applied yet, `this` refers to a raw object.  
-`after`: your schema has been applied, `this` refers to your instance.
+#### Available hooks (before and after)
 
-#### insert
+- "load": the schema is applied (like: `new User({})`);
+- "insert": the instance is inserted in the database;
+- "update": `update` or `findAndModify` is called on the collection;
+- "remove": the instance is removed from the database;
 
-Refers to the moment when a record is inserted.
+### Validation
 
-`before`: your instance is about to be inserted into the database.  
-`after`: your instance has been inserted.
+See "hooks".
 
-#### update
+`monastery` provides the basic structures for the most flexibility. Hooks are all you need for validation.
 
-Refers to the moment when a record is updated either via `update` or `findAndModify`.
+```javascript
+var requireName = function(){
+  return typeof this.name === "undefined"
+}
 
-`before`: your instance is about to be updated in the database.  
-`after`: your instance has been updated.
+User.before("insert", requireName);
 
-#### remove
+User.before("insert", function(done){
+  checkSomethingAsync(this, done);
+});
+```
 
-Refers to the moment when a record is removed.
-
-`before`: your instance is about to be removed from the database.  
-`after`: your instance has been removed.
+Returning `false` will halt the hook queue. It will also halt the operation you were attempting to complete.
 
 ## Contributing
 
 - Follow the coding style;
-- Write a test;
-- Send a **contained** pull request;
+- Write tests;
+- Send a **self-contained** pull request.
 
 ## License
 

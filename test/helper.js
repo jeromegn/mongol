@@ -6,3 +6,6 @@ var assert = require("chai").assert
 
 exports.assert = assert;
 exports.Model  = Model;
+exports.clearDatabase = function(done){
+  Model.DB.driver.db.dropDatabase(done)
+}

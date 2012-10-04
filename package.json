@@ -1,22 +1,23 @@
 {
     "name": "monastery"
   , "version": "0.0.1"
-  , "description": "Barebone models for monk"
+  , "description": "Light modeling for MongoDB"
   , "main": "lib/index.js"
   , "scripts": {
         "test": "mocha -R spec"
     }
   , "keywords": ["monk", "mongodb", "model", "odm", "orm", "mongo"]
+  , "repository": { "type": "git", "url": "git://github.com/LearnBoost/monk.git" }
   , "author": "Jerome Gravel-Niquet"
   , "license": "MIT"
 
   , "dependencies": {
-        "monk" : "~0.3.0"
-      , "async": "*"
+        "monk" : "~0.5.0"
+      , "async": "~0.1.22"
     }
   , "devDependencies": {
-        "mocha": "*"
-      , "chai" : "*"
-      , "sugar": "*"
+        "mocha": "~1.5.0"
+      , "chai" : "~1.2.0"
+      , "sugar": "~1.3.5"
     }
 }

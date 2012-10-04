@@ -14,7 +14,7 @@ You're probably face palming yourself, wondering "why... oh why another mongodb 
 
 `npm install monastery`
 
-## Usage
+## `Model`
 
 ### Initialize
 
@@ -78,7 +78,7 @@ var Post = new Model("posts", {
 
 The documents will be casted according to your schema.
 
-### Model inheritance
+### Inheritance
 
 If you need models that are extensions of a more general model, you can inherit from another `Model` by using `Model.prototype.inherits`:
 
@@ -93,7 +93,7 @@ var Article = new Model("docs", {
 }).inherits(Doc);
 ```
 
-### Inserting an instance
+### Inserting
 
 ```javascript
 User.insert({
@@ -114,7 +114,48 @@ User.insert({
 
 Furthermore, they also all return a `promise`, just like monk.
 
-### Hooks
+## Instances of your models
+
+`var user = new User()`
+
+### save(callback)
+
+Inserts or updates your instance (based on the presence or not of the key `_id`).
+
+```javascript
+user.save(function(error){
+  // user inserted in the database
+  // typeof user._id !== "undefined"
+
+  user.newProperty = "this is a new property";
+  user.save(function(error){
+    // user has been updated
+  });
+});
+```
+
+### update(data, callback)
+
+Updates your instance with the supplied `data`.
+
+```javascript
+user.update({newField: "test"}, function(error, updated_user){
+  // updated_user === user
+  // user.newField === "test"
+});
+```
+
+### remove(callback)
+
+Removes your instance from the database. Note that your instance of `User` is still filled with data, it just has its `_id` removed. Therefore you could reinsert it by using `save`.
+
+```javascript
+user.remove(function(error){
+  // typeof user._id === "undefined"
+});
+```
+
+## Hooks
 
 A hook is a mechanism to perform some actions or alter some data before or after some event. Hooks are all asynchronous and therefore must call the provided callback. Available hooks are: "load", "insert", "update" and "remove".
 
@@ -135,7 +176,7 @@ User.before("insert", function(done){
 
 You should pass an error to the callback if there is one. The operations will be alted.
 
-#### Sync
+### Sync
 
 Hooks can be sync (and will run one after the other).
 
@@ -145,7 +186,7 @@ User.before("insert", function(){
 });
 ```
 
-#### Async
+### Async
 
 Hooks can be async and will still run one after the other. Use a callback in your function like so:
 
@@ -155,7 +196,7 @@ User.after("remove", function(done){
 });
 ```
 
-#### Async and parallel
+### Async and parallel
 
 Hooks can be called in parallel. **You need to use two callback for those to work!**
 
@@ -167,14 +208,14 @@ User.before("insert", function(next, done){
 });
 ```
 
-#### Available hooks (before and after)
+### Available hooks (before and after)
 
-- "load": the schema is applied (like: `new User({})`);
+- "load": the schema is applied (with `new User()`);
 - "insert": the instance is inserted in the database;
 - "update": `update` or `findAndModify` is called on the collection;
 - "remove": the instance is removed from the database;
 
-### Validation
+## Validation
 
 See "hooks".
 

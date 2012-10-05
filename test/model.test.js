@@ -21,7 +21,7 @@ describe("Model", function(){
     var M = new Model("models", helper.schemas.full);
 
     it("should set the schema on the constructor", function(){
-      assert.deepEqual(M.schema, helper.schemas.full);
+      assert.deepEqual(M.schema.schema, helper.schemas.full);
     });
   });
 
@@ -30,7 +30,7 @@ describe("Model", function(){
     var B = helper.models.Inherited;
 
     it("should inherit the defaults from the parent and merge them", function(){
-      assert.deepEqual(B.schema, {a: "a", b: "b"});
+      assert.deepEqual(B.schema.schema, {a: "a", b: "b"});
     });
     
   });

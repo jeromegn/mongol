@@ -9,11 +9,12 @@ describe("Instance of a model", function(){
 
   describe("instantiating", function(){
     var m = new M();
+    console.log(m);
 
     it("should apply the schema to the instance", function(){
       assert.equal(m.a, "a");
       assert.equal(m.b, "b");
-      assert.equal(m.c, "a");
+      assert.equal(m.c, "test");
       assert.instanceOf(m.d, Date);
       assert.isUndefined(m.e);
       assert.equal(m.obj.is, "not a sub schema");
@@ -39,10 +40,12 @@ describe("Instance of a model", function(){
         , ids: ["4e4e1638c85e808431000003", Model.ObjectID("4e4e1638c85e808431000003")]
       });
 
+      console.log(m);
+
       it("should apply the embedded schema too", function(){
         assert.equal(m.a, "a");
         assert.equal(m.b, "b");
-        assert.equal(m.c, "a");
+        assert.equal(m.c, "test");
         assert.instanceOf(m.d, Date);
         assert.isUndefined(m.e);
         assert.equal(m.obj.is, "not a sub schema");
@@ -51,13 +54,13 @@ describe("Instance of a model", function(){
         assert.isArray(m.embedded);
           assert.equal(m.embedded[0].a, "test");
           assert.equal(m.embedded[0].b, "b");
-          assert.equal(m.embedded[0].c, "a");
+          assert.equal(m.embedded[0].c, "test");
           assert.instanceOf(m.embedded[0].d, Date);
           assert.isUndefined(m.embedded[0].e);
 
           assert.equal(m.embedded[1].a, "a");
           assert.equal(m.embedded[1].b, "b");
-          assert.equal(m.embedded[1].c, "a");
+          assert.equal(m.embedded[1].c, "test");
           assert.instanceOf(m.embedded[1].d, Date);
           assert.isUndefined(m.embedded[1].e);
 

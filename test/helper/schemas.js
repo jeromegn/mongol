@@ -1,7 +1,7 @@
 var Model = require("./model");
 
-var c = function(){
-  return this.a;
+var c = function(value){
+  return "test";
 }
 
 exports.full = {

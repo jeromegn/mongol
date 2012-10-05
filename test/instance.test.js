@@ -9,7 +9,6 @@ describe("Instance of a model", function(){
 
   describe("instantiating", function(){
     var m = new M();
-    console.log(m);
 
     it("should apply the schema to the instance", function(){
       assert.equal(m.a, "a");
@@ -39,8 +38,6 @@ describe("Instance of a model", function(){
         , embed_nums: ["10", "20", 30]
         , ids: ["4e4e1638c85e808431000003", Model.ObjectID("4e4e1638c85e808431000003")]
       });
-
-      console.log(m);
 
       it("should apply the embedded schema too", function(){
         assert.equal(m.a, "a");
@@ -128,7 +125,7 @@ describe("Instance of a model", function(){
         });
 
         before(function(done){
-          m.update({new_field: "yay"}, function(error, data){
+          m.update({new_field: "yay"}, {new: true}, function(error, data){
             doc = data;
             done();
           });
@@ -165,11 +162,13 @@ describe("Instance of a model", function(){
 
         before(function(done){
           m.newProp = "yep, new prop";
+          m.a = "yippy";
           m.save(done)
         });
 
         it("should have updated the instance", function(){
-          assert.equal(m.newProp, "yep, new prop")
+          assert.equal(m.newProp, "yep, new prop");
+          assert.equal(m.a, "yippy");
         });
         it("should have ran the 'before update' hook", function(){
           assert.isTrue(beforeUpdate);
@@ -251,6 +250,27 @@ describe("Instance of a model", function(){
           assert.isTrue(afterInsert);
         });
       });
+    });
+  });
+  
+  describe("partial instances", function(){
+    var instance, partial;
+
+    before(function(done){
+      M.insert({}, function(error, doc){
+        instance = doc;
+        M.findById(instance._id, "a", function(error, doc){
+          partial = doc;
+          done(error);
+        });
+      });
+    });
+
+    it("should return an instance of the model", function(){
+      assert.instanceOf(partial, M);
+    });
+    it("should only have the selected fields and the _id", function(){
+      assert.deepEqual(partial, {a: "a", _id: instance._id})
     });
   });
 });

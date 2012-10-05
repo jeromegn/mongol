@@ -227,7 +227,7 @@ See "hooks".
 
 ```javascript
 var requireName = function(){
-  return typeof this.name === "undefined"
+  return typeof this.name !== "undefined"
 }
 
 User.before("insert", requireName);

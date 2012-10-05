@@ -93,6 +93,8 @@ var Article = new Model("docs", {
 }).inherits(Doc);
 ```
 
+*Note: Hooks are not inherited.*
+
 ### Inserting
 
 ```javascript
@@ -134,12 +136,14 @@ user.save(function(error){
 });
 ```
 
-### update(data, callback)
+### update(data, options, callback)
 
 Updates your instance with the supplied `data`.
 
+Will use `collection.update` unless `new: true` is passed in the options object, in this case, it will use findAndModify and will apply the result to the instance.
+
 ```javascript
-user.update({newField: "test"}, function(error, updated_user){
+user.update({newField: "test"}, {new: true}, function(error, updated_user){
   // updated_user === user
   // user.newField === "test"
 });

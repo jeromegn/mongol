@@ -1,166 +1,292 @@
-// var helper = require("./helper")
-//   , assert = helper.assert
-//   , Model  = helper.Model;
+var helper = require("./helper")
+  , assert = helper.assert
+  , util   = require("../lib/monastery/util")
+  , Model  = helper.Model;
 
-// describe("Hooks", function(){
-//   before(helper.clearDatabase);
+describe("Hooks", function(){
+  before(helper.clearDatabase);
 
-//   describe("types", function(){
-//     var X = new Model("hooked", {
-//       def: "some string"
-//     });
+  var X = new Model("hooked", {
+    str: "some string"
+  });
 
-//     var x;
+  describe("before", function(){
 
-//     describe("insert", function(){
-//       var beforeInsert, afterInsert;
+    var pending_insert = 0
+      , pending_load = 0
+      , pending_update = 0
+      , pending_remove = 0;
 
-//       before(function(){
-//         X.before("insert", function(){
-//           beforeInsert = Object.clone(this);
-//           this.another = "property";
-//         });
+    describe("load", function(){
+      var x
+        , before_sync
+        , before_async
+        , before_parallel;
 
-//         X.after("insert", function(){
-//           afterInsert = Object.clone(this);
-//           this.someVirtual = "this is a virtual";
-//         });
-//       });
+      before(function(){
+        X.before("load", function(){
+          before_sync = this instanceof X;
+          this.sync_load = new Date();
+          pending_load--;
+        });
+        pending_load++;
 
-//       before(function (done){
-//         X.insert({}, function(error, doc){
-//           x = doc;
-//           done();
-//         });
-//       });
+        X.before("load", function(next){
+          before_async = this instanceof X;
+          setTimeout(function(){
+            this.async1_load = new Date();
+            pending_load--;
+            next();
+          }.bind(this), 100);
+        });
+        pending_load++;
 
-//       describe("before", function(){
-//         it("should have ran the hook", function(){
-//           assert.equal(x.another, "property");
-//         });
-//         it("should not have inserted the document", function(){
-//           assert.isUndefined(beforeInsert._id);
-//         });
-//         it("should not have ran the `after` hook", function(){
-//           assert.isUndefined(beforeInsert.someVirtual);
-//         });
-//       });
+        X.before("load", function(next){
+          setTimeout(function(){
+            this.async2_load = new Date();
+            pending_load--;
+            next();
+          }.bind(this), 100);
+        });
+        pending_load++;
 
-//       describe("after", function(){
-//         it("should have ran the hook", function(){
-//           assert.equal(x.someVirtual, "this is a virtual");
-//         });
-//         it("should have inserted the document", function(){
-//           assert.isDefined(afterInsert._id);
-//         });
-//       });
+        X.before("load", function(next, done){
+          before_parallel = this instanceof X;
+          next();
+          setTimeout(function(){
+            this.parallel1_load = new Date();
+            pending_load--;
+            done();
+          }.bind(this), 100);
+        });
+        pending_load++;
 
-//     });
+        X.before("load", function(next, done){
+          next();
+          setTimeout(function(){
+            this.parallel2_load = new Date();
+            pending_load--;
+            done();
+          }.bind(this), 50);
+        })
+        pending_load++;
+      });
 
-//     describe("load", function(){
-//       var beforeLoad, afterLoad;
+      before(function(done){
+        X.load({}, function(error, obj){
+          x = obj;
+          done(error);
+        });
+      });
 
-//       before(function(){
-//         X.before("load", function(){
-//           beforeLoad = this;
-//           this.changedBefore = true;
-//         });
+      it("should have ran all the hooks", function(){
+        assert.equal(pending_load, 0);
+      });
+      it("should have assigned the properties before inserting", function(){
+        assert.instanceOf(x.sync_load, Date);
+        assert.instanceOf(x.async1_load, Date);
+        assert.instanceOf(x.async2_load, Date);
+        assert.instanceOf(x.parallel1_load, Date);
+        assert.instanceOf(x.parallel2_load, Date);
+      });
+      it("should have ran the hooks in the right order", function(){
+        assert(x.sync_load < x.async1_load);
+        assert(x.async1_load < x.async2_load);
+        assert(x.async2_load < x.parallel1_load);
+        assert(x.parallel1_load > x.parallel2_load); // Parallel 1 was longer than parallel 2
+      });
+      it("should have scoped the hook with the raw obj", function(){
+        assert.isFalse(before_sync);
+        assert.isFalse(before_async);
+        assert.isFalse(before_parallel);
+      });
+    });
 
-//         X.after("load", function(){
-//           afterLoad = this;
-//           this.changedAfter = false;
-//         });
-//       });
+    describe("insert", function(){
+      var x
+        , before_sync
+        , before_async
+        , before_parallel;
 
-//       before(function (done){
-//         X.findById(x._id, function(error, doc){
-//           x = doc;
-//           done();
-//         });
-//       });
+      before(function(){
+        X.before("insert", function(){
+          before_sync = this instanceof X;
+          this.sync_insert = new Date();
+          pending_insert--;
+        });
+        pending_insert++;
 
-//       describe("before", function(){
-//         it("should have ran the hook", function(){
-//           assert.equal(x.changedBefore, true);
-//         });
-//         it("should be raw data", function(){
-//           assert.notInstanceOf(beforeLoad, X);
-//         });
-//         it("should not have ran the `after` hook", function(){
-//           assert.isUndefined(beforeLoad.changedAfter);
-//         });
-//       });
+        X.before("insert", function(next){
+          before_async = this instanceof X;
+          setTimeout(function(){
+            this.async1_insert = new Date();
+            pending_insert--;
+            next();
+          }.bind(this), 100);
+        });
+        pending_insert++;
 
-//       describe("after", function(){
-//         it("should have ran the hook", function(){
-//           assert.equal(x.changedAfter, false);
-//         });
-//         it("should have instantiated the instance", function(){
-//           assert.instanceOf(afterLoad, X);
-//         });
-//       });
-//     });
+        X.before("insert", function(next){
+          setTimeout(function(){
+            this.async2_insert = new Date();
+            pending_insert--;
+            next();
+          }.bind(this), 100);
+        });
+        pending_insert++;
 
-//   });
+        X.before("insert", function(next, done){
+          before_parallel = this instanceof X;
+          next();
+          setTimeout(function(){
+            this.parallel1_insert = new Date();
+            pending_insert--;
+            done();
+          }.bind(this), 100);
+        });
+        pending_insert++;
 
-// //  The callback types work just fine, but I can't seem to test it. Getting a mocha error.
-// //  TODO: fix them.
+        X.before("insert", function(next, done){
+          next();
+          setTimeout(function(){
+            this.parallel2_insert = new Date();
+            pending_insert--;
+            done();
+          }.bind(this), 50);
+        })
+        pending_insert++;
+      });
 
-//   describe("callback types", function(){
-    
-//     var H = new Model("h", {});
+      before(function(done){
+        X.insert({}, function(error, doc){
+          x = doc;
+          done(error);
+        })
+      });
 
-//     var h, sync, async, parallel1, parallel2;
+      it("should have ran all the hooks", function(){
+        assert.equal(pending_insert, 0);
+      });
+      it("should have assigned the properties before inserting", function(){
+        assert.instanceOf(x.sync_insert, Date);
+        assert.instanceOf(x.async1_insert, Date);
+        assert.instanceOf(x.async2_insert, Date);
+        assert.instanceOf(x.parallel1_insert, Date);
+        assert.instanceOf(x.parallel2_insert, Date);
+      });
+      it("should have ran the hooks in the right order", function(){
+        assert(x.sync_insert < x.async1_insert);
+        assert(x.async1_insert < x.async2_insert);
+        assert(x.async2_insert < x.parallel1_insert);
+        assert(x.parallel1_insert > x.parallel2_insert); // Parallel 1 was longer than parallel 2
+      });
+      it("should have scoped the hook with the an instance", function(){
+        assert.isTrue(before_sync);
+        assert.isTrue(before_async);
+        assert.isTrue(before_parallel);
+      });
+    });
 
-//     H.before("insert", function(){
-//       sync = Date.now();
-//       console.log("Called sync", sync);
-//       return true;
-//     });
+    describe("update", function(){
+      var x
+        , x2
+        , before_sync
+        , before_async
+        , before_parallel;
 
-//     H.before("insert", function(next){
-//       setTimeout(function(){
-//         async = Date.now();
-//         console.log("Called async", async);
-//         next()
-//       }, 100);
-//     });
+      before(function(){
+        X.before("update", function(){
+          before_sync = this instanceof X;
+          this.sync_update = new Date();
+          pending_update--;
+        });
+        pending_update++;
 
-//     H.before("insert", function(next, done){
-//       next();
-//       setTimeout(function(){
-//         parallel1 = Date.now();
-//         console.log("Called parallel 1", parallel1);
-//         done()
-//       }, 100);
-//     });
+        X.before("update", function(next){
+          before_async = this instanceof X;
+          setTimeout(function(){
+            this.async1_update = new Date();
+            pending_update--;
+            next();
+          }.bind(this), 100);
+        });
+        pending_update++;
 
-//     H.before("insert", function(next, done){
-//       next();
-//       setTimeout(function(){
-//         parallel2 = Date.now();
-//         console.log("Called parallel 2", parallel2);
-//         done()
-//       }, 100);
-//     });
+        X.before("update", function(next){
+          setTimeout(function(){
+            this.async2_update = new Date();
+            pending_update--;
+            next();
+          }.bind(this), 100);
+        });
+        pending_update++;
 
+        X.before("update", function(next, done){
+          before_parallel = this instanceof X;
+          next();
+          setTimeout(function(){
+            this.parallel1_update = new Date();
+            pending_update--;
+            done();
+          }.bind(this), 100);
+        });
+        pending_update++;
 
-//     before(function(done){
-//       H.insert({}, function(err, doc){
-//         h = doc;
-//         done();
-//       });
-//     });
+        X.before("update", function(next, done){
+          next();
+          setTimeout(function(){
+            this.parallel2_update = new Date();
+            pending_update--;
+            done();
+          }.bind(this), 50);
+        })
+        pending_update++;
+      });
 
+      before(function(done){
+        X.insert({}, function(error, doc){
+          if (error)
+            return done(error);
+          doc.update({updated: true}, {new: true}, function(error, doc){
+            if (error)
+              return done(error);
+            x = doc;
+            X.findById(x._id, function(error, doc){
+              x2 = doc;
+              done(error);
+            })
+          });
+        });
+      });
 
-//     it("should have processed the callbacks in the right order", function(){
-//       console.log(sync);
-//       console.log(async);
-//       console.log(parallel1);
-//       console.log(parallel2);
-//       assert(false);
-//     });
-
-//   });
-
-// });
+      it("should have ran all the hooks", function(){
+        assert.equal(pending_update, 0);
+      });
+      it("should have assigned the properties before updating", function(){
+        assert.instanceOf(x.sync_update, Date);
+        assert.instanceOf(x.async1_update, Date);
+        assert.instanceOf(x.async2_update, Date);
+        assert.instanceOf(x.parallel1_update, Date);
+        assert.instanceOf(x.parallel2_update, Date);
+      });
+      it("should have saved the changes", function(){
+        assert.instanceOf(x2.sync_update, Date);
+        assert.instanceOf(x2.async1_update, Date);
+        assert.instanceOf(x2.async2_update, Date);
+        assert.instanceOf(x2.parallel1_update, Date);
+        assert.instanceOf(x2.parallel2_update, Date);
+      });
+      it("should have ran the hooks in the right order", function(){
+        assert(x2.sync_update < x2.async1_update);
+        assert(x2.async1_update < x2.async2_update);
+        assert(x2.async2_update < x2.parallel1_update);
+        assert(x2.parallel1_update > x2.parallel2_update); // Parallel 1 was longer than parallel 2
+      });
+      it("should have scoped the hook with the an instance", function(){
+        assert.isTrue(before_sync);
+        assert.isTrue(before_async);
+        assert.isTrue(before_parallel);
+      });
+    });
+  });
+});

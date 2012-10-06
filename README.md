@@ -8,7 +8,8 @@ You're probably face palming yourself, wondering "why... oh why another mongodb 
 
 - Simple and flexible modeling;
 - Light codebase (just enough LOC, comprehensible, etc.);
-- No schema lock-in (they're just there to ensure the right type of data gets written).
+- No schema lock-in (they're just there to ensure the right type of data gets written);
+- Prototypal inheritance.
 
 ## Install
 

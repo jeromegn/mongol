@@ -1,3 +1,8 @@
+# 0.1.1 / 2012-10-06
+
+- Fixed the hooks;
+- Added some hooks tests.
+
 # 0.1.0 / 2012-10-05
 
 - Added "partial" instances support (the results of requesting only certain fields when finding or updating);

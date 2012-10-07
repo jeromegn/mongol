@@ -196,10 +196,6 @@ You should pass an error to the callback if there is one. The operations will be
 
 Hooks can be sync (and will run one after the other).
 
-If an error is thrown within this function, it will halt the chain of hooks and your callback will be called with it as a first argument.
-
-If the return value of this function is strictly equal to `false`, then an error will be produced and sent to your callback immedialty.
-
 ```javascript
 User.before("insert", function(){
   this.prop = "some property value";
@@ -211,12 +207,6 @@ Example with an error:
 ```javascript
 User.before("remove", function isNotAnAdmin(){
   return this.isAdmin !== true;
-});
-
-User.insert({isAdmin: true}, function(error, user){
-  user.remove(function(error){
-    // error.message === "Hook isNotAnAdmin returned false"
-  });
 });
 ```
 
@@ -256,17 +246,37 @@ See "hooks".
 
 ```javascript
 var requireName = function(){
-  return typeof this.name !== "undefined"
+  if (typeof this.name === "undefined")
+    throw new Error("Name is required");
 }
 
 User.before("insert", requireName);
 
-User.before("insert", function(done){
-  checkSomethingAsync(this, done);
+User.before("insert", function(next){
+  checkSomethingAsync(this, function(error, result){
+    if (error)
+      return next(new Error("Something when wrong when checking something async"));
+    else if (!result)
+      return next(new Error("No result when checking something async"));
+    else {
+      this.checkedAsynchronously = true;
+      next();
+    }
+  });
 });
 ```
 
-Returning `false` will halt the hook queue. It will also halt the operation you were attempting to complete.
+Returning `false` in a sync hook will halt the hook's queue. It will then call your callback with an error;
+
+If an error is thrown within a sync hook, it will halt the chain of hooks and your callback will be called with it as a first argument.
+
+If an error is passed as first argument to a callback of an async hook, same thing will happen.
+
+```javascript
+User.insert({}, function(error, user){
+  // error.message === "Name is required";
+});
+```
 
 ## Contributing
 

@@ -1,3 +1,8 @@
+# 0.1.2 / 2012-10-07
+
+- Removed `update` hook. (Had no idea how to handle the update hook (what to pass, what to do with changes));
+- Added `reload` to get the latest version of an instance from the database.
+
 # 0.1.1 / 2012-10-06
 
 - Fixed the hooks;

@@ -1,6 +1,6 @@
 {
     "name": "monastery"
-  , "version": "0.1.1"
+  , "version": "0.1.2"
   , "description": "Light modeling for MongoDB"
   , "main": "lib/index.js"
   , "scripts": {

@@ -137,15 +137,25 @@ user.save(function(error){
 });
 ```
 
-### update(data, options, callback)
+### update(query, callback)
 
-Updates your instance with the supplied `data`.
+Updates your instance with the supplied `query`. It uses the collection's `update` method so **don't forget to use `$set`!**
 
-Will use `collection.update` unless `new: true` is passed in the options object, in this case, it will use findAndModify and will apply the result to the instance.
+It will not update your instance in memory, only in the database.
 
 ```javascript
-user.update({newField: "test"}, {new: true}, function(error, updated_user){
-  // updated_user === user
+user.update({$set: {newField: "test"}}, function(error, updated){
+  // updated === true
+  // user.newField === undefined
+});
+```
+
+### reload(callback)
+
+Reloads the current instance from the database.
+
+```javascript
+user.reload(function(error){
   // user.newField === "test"
 });
 ```
@@ -164,10 +174,11 @@ user.remove(function(error){
 
 A hook is a mechanism to perform some actions or alter some data before or after some event. Hooks are all asynchronous and therefore must call the provided callback. Available hooks are: "load", "insert", "update" and "remove".
 
-Actually **useful** examples:
+Actually **useful** example of a parallel hook:
 
 ```javascript
-User.before("insert", function(done){
+User.before("insert", function(next, done){
+  next(); // calls the next function in the hook's queue immediatly
   bcrypt.hash(this.password, 10, function(error, hash){
     if (error)
       return done(error);
@@ -185,9 +196,27 @@ You should pass an error to the callback if there is one. The operations will be
 
 Hooks can be sync (and will run one after the other).
 
+If an error is thrown within this function, it will halt the chain of hooks and your callback will be called with it as a first argument.
+
+If the return value of this function is strictly equal to `false`, then an error will be produced and sent to your callback immedialty.
+
 ```javascript
 User.before("insert", function(){
   this.prop = "some property value";
+});
+```
+
+Example with an error:
+
+```javascript
+User.before("remove", function isNotAnAdmin(){
+  return this.isAdmin !== true;
+});
+
+User.insert({isAdmin: true}, function(error, user){
+  user.remove(function(error){
+    // error.message === "Hook isNotAnAdmin returned false"
+  });
 });
 ```
 
@@ -217,7 +246,6 @@ User.before("insert", function(next, done){
 
 - "load": the schema is applied (with `new User()`);
 - "insert": the instance is inserted in the database;
-- "update": `update` or `findAndModify` is called on the collection;
 - "remove": the instance is removed from the database;
 
 ## Validation

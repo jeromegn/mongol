@@ -113,52 +113,30 @@ describe("Instance of a model", function(){
       });
 
       describe("update", function(){
-        var doc, beforeUpdate, afterUpdate;
-
-        before(function(){
-          M.before("update", function(){
-            beforeUpdate = true;
-          });
-          M.after("update", function(){
-            afterUpdate = true;
-          });
-        });
+        var updated;
 
         before(function(done){
-          m.update({new_field: "yay"}, {new: true}, function(error, data){
-            doc = data;
-            done();
+          m.update({$set: {new_field: "yay"}}, function(error, data){
+            if (error)
+              return done(error);
+            updated = data;
+            m.reload(done);
           });
         });
 
         it("should return an instance of the model", function(){
-          assert.instanceOf(doc, M);
           assert.instanceOf(m, M);
         });
+        it("should have updated one document", function(){
+          assert.isTrue(updated)
+        });
         it("should have the modified fields", function(){
-          assert.equal(doc.new_field, "yay");
           assert.equal(m.new_field, "yay");
-        });
-        it("should have ran the 'before update' hook", function(){
-          assert.isTrue(beforeUpdate);
-        });
-        it("should have ran the 'after update' hook", function(){
-          assert.isTrue(afterUpdate);
         });
         
       });
 
       describe("save", function(){
-        var beforeUpdate, afterUpdate;
-
-        before(function(){
-          M.before("update", function(){
-            beforeUpdate = true;
-          });
-          M.after("update", function(){
-            afterUpdate = true;
-          });
-        });
 
         before(function(done){
           m.newProp = "yep, new prop";
@@ -169,12 +147,6 @@ describe("Instance of a model", function(){
         it("should have updated the instance", function(){
           assert.equal(m.newProp, "yep, new prop");
           assert.equal(m.a, "yippy");
-        });
-        it("should have ran the 'before update' hook", function(){
-          assert.isTrue(beforeUpdate);
-        });
-        it("should have ran the 'after update' hook", function(){
-          assert.isTrue(afterUpdate);
         });
       });
 
@@ -271,6 +243,23 @@ describe("Instance of a model", function(){
     });
     it("should only have the selected fields and the _id", function(){
       assert.deepEqual(partial, {a: "a", _id: instance._id})
+    });
+
+    describe("reload", function(){
+      before(function(done){
+        partial.reload(done)
+      });
+
+      it("should still be an instance of the model", function(){
+        assert.instanceOf(partial, M);
+      });
+      it("should have the fields applied to it", function(){
+        assert.isDefined(partial.b);
+        assert.isDefined(partial.c);
+        assert.isDefined(partial.d);
+        assert.isDefined(partial.obj);
+        assert.isDefined(partial.sub);
+      });
     });
   });
 });

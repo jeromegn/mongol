@@ -14,7 +14,6 @@ describe("Hooks", function(){
 
     var pending_insert = 0
       , pending_load = 0
-      , pending_update = 0
       , pending_remove = 0;
 
     describe("load", function(){
@@ -187,106 +186,5 @@ describe("Hooks", function(){
       });
     });
 
-    describe("update", function(){
-      var x
-        , x2
-        , before_sync
-        , before_async
-        , before_parallel;
-
-      before(function(){
-        X.before("update", function(){
-          before_sync = this instanceof X;
-          this.sync_update = new Date();
-          pending_update--;
-        });
-        pending_update++;
-
-        X.before("update", function(next){
-          before_async = this instanceof X;
-          setTimeout(function(){
-            this.async1_update = new Date();
-            pending_update--;
-            next();
-          }.bind(this), 100);
-        });
-        pending_update++;
-
-        X.before("update", function(next){
-          setTimeout(function(){
-            this.async2_update = new Date();
-            pending_update--;
-            next();
-          }.bind(this), 100);
-        });
-        pending_update++;
-
-        X.before("update", function(next, done){
-          before_parallel = this instanceof X;
-          next();
-          setTimeout(function(){
-            this.parallel1_update = new Date();
-            pending_update--;
-            done();
-          }.bind(this), 100);
-        });
-        pending_update++;
-
-        X.before("update", function(next, done){
-          next();
-          setTimeout(function(){
-            this.parallel2_update = new Date();
-            pending_update--;
-            done();
-          }.bind(this), 50);
-        })
-        pending_update++;
-      });
-
-      before(function(done){
-        X.insert({}, function(error, doc){
-          if (error)
-            return done(error);
-          doc.update({updated: true}, {new: true}, function(error, doc){
-            if (error)
-              return done(error);
-            x = doc;
-            X.findById(x._id, function(error, doc){
-              x2 = doc;
-              done(error);
-            })
-          });
-        });
-      });
-
-      it("should have ran all the hooks", function(){
-        assert.equal(pending_update, 0);
-      });
-      it("should have assigned the properties before updating", function(){
-        assert.instanceOf(x.sync_update, Date);
-        assert.instanceOf(x.async1_update, Date);
-        assert.instanceOf(x.async2_update, Date);
-        assert.instanceOf(x.parallel1_update, Date);
-        assert.instanceOf(x.parallel2_update, Date);
-      });
-      it("should have saved the changes", function(){
-        assert.instanceOf(x2.sync_update, Date);
-        assert.instanceOf(x2.async1_update, Date);
-        assert.instanceOf(x2.async2_update, Date);
-        assert.instanceOf(x2.parallel1_update, Date);
-        assert.instanceOf(x2.parallel2_update, Date);
-      });
-      it("should have ran the hooks in the right order", function(){
-        assert(x2.sync_update < x2.async1_update);
-        assert(x2.async1_update < x2.async2_update);
-        assert(x2.async2_update < x2.parallel1_update);
-        assert(x2.parallel1_update > x2.parallel2_update); // Parallel 1 was longer than parallel 2
-      });
-      it("should have scoped the hook with the an instance", function(){
-        assert.isTrue(before_sync);
-        assert.isTrue(before_async);
-        assert.isTrue(before_parallel);
-      });
-    });
   });
 });

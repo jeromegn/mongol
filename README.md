@@ -101,7 +101,7 @@ var Article = new Model("docs", {
 ```javascript
 User.insert({
 
-    email: john@doe.com
+    email: "john@doe.com"
   , name: "John Doe"
   , password: "password123" // Just use `bcrypt`, example below...
 
@@ -111,9 +111,9 @@ User.insert({
 });
 ```
 
-### Finding, updating, removing, etc.
+### Finding, updating, removing, indexing, etc.
 
-`find`, `findOne`, `findById`, `update`, `findAndModify`, `remove` are all inherited from [monk](http://github.com/learnboost/monk) and they all send back an instance of your `Model`.
+`find`, `findOne`, `findById`, `update`, `findAndModify`, `remove`, `index`, `indexes`, `dropIndex` and `dropIndexes` are all inherited from [monk](http://github.com/learnboost/monk) and they all send back an instance of your `Model`.
 
 Furthermore, they also all return a `promise`, just like monk.
 

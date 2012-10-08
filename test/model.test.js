@@ -190,4 +190,31 @@ describe("Model", function(){
       });
     });
   });
+  
+  describe("indexes", function(){
+
+    describe("indexing", function(){
+      var M = new Model("models", helper.schemas.full)
+        , promise
+        , indexes;
+
+      before(function(done){
+        promise = M.index("a", function(error){
+          if (error)
+            return done(error);
+          M.indexes(function(error, i){
+            indexes = i;
+            done(error);
+          });
+        });
+      });
+
+      it("should return a promise", function(){
+        assert.instanceOf(promise, monk.Promise);
+      });
+      it("should have a the index setup", function(){
+        assert.isDefined(indexes.a_1);
+      });
+    });
+  });
 });

@@ -141,7 +141,9 @@ describe("Instance of a model", function(){
         before(function(done){
           m.newProp = "yep, new prop";
           m.a = "yippy";
-          m.save(done)
+          m.save(function(error){
+            m.reload(done);
+          });
         });
 
         it("should have updated the instance", function(){

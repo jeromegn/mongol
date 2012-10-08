@@ -72,7 +72,7 @@ describe("Hooks", function(){
       });
 
       before(function(done){
-        X.load({}, function(error, obj){
+        X._load({}, function(error, obj){
           x = obj;
           done(error);
         });

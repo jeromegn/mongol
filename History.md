@@ -1,3 +1,8 @@
+# 0.1.3 / 2012-10-07
+
+- Added indexing;
+- Added docs within the code.
+
 # 0.1.2 / 2012-10-07
 
 - Removed `update` hook. (Had no idea how to handle the update hook (what to pass, what to do with changes));

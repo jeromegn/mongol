@@ -82,6 +82,29 @@ describe("Model", function(){
         });
       });
 
+      describe("find", function(){
+        var promise, as;
+
+        before(function(done){
+          promise = A.find({}, function(error, docs){
+            as = docs;
+            done();
+          });
+        });
+
+        it("should return a promise", function(){
+          assert.instanceOf(promise, monk.Promise);
+        });
+        it("should be an array", function(){
+          assert.instanceOf(as, Array)
+        });
+        it("should be an array of instance of the Model", function(){
+          as.forEach(function(a){
+            assert.instanceOf(a, A);
+          });
+        });
+      });
+
       describe("find one", function(){
         var promise, a2;
 

@@ -38,3 +38,8 @@ exports.normal = {
   , not_def: false
   , count: Number
 }
+
+exports.customId = {
+    _id: String
+  , other_prop: "prop"
+}

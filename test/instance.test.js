@@ -90,7 +90,26 @@ describe("Instance of a model", function(){
       });
 
     });
+
+    describe("from a model with a custom _id", function(){
+      var CustomID = helper.models.CustomID;
+
+      var c = new CustomID({
+        _id: "this is a string with many more chars than what is normally allowed for an ObjectID"
+      });
+
+      before(function(done){
+        c.save(function(error){
+          c.reload(done);
+        });
+      });
+
+      it("should not cast the _id as an ObjectID", function(){
+        assert.notInstanceOf(c._id, Model.ObjectID);
+      });
+    });
   });
+
   describe("operations", function(){
     
     var M = new Model("basic", helper.schemas.basic);

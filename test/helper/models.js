@@ -13,8 +13,11 @@ Inherited.prototype.test2 = function(){};
 
 var Normal = new Model("normal", schemas.normal);
 
+var CustomID = new Model("custom_id", schemas.customId);
+
 exports.Full = Full;
 exports.Basic = Basic;
 exports.Basic2 = Basic2;
 exports.Inherited = Inherited;
 exports.Normal = Normal;
+exports.CustomID = CustomID;

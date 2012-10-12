@@ -30,7 +30,7 @@ describe("Model", function(){
     var B = helper.models.Inherited;
 
     it("should inherit the defaults from the parent and merge them", function(){
-      assert.deepEqual(B.schema.schema, {a: "a", b: "b"});
+      assert.deepEqual(B.schema.schema, {a: "a", b: "b", _id: Model.ObjectID});
     });
     
   });

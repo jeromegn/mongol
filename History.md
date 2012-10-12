@@ -1,3 +1,7 @@
+# 0.1.5 / 2012-10-12
+
+- Don't cast the `_id` to an ObjectID by default.
+
 # 0.1.4 / 2012-10-08
 
 - Fixed `find`.

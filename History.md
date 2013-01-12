@@ -1,3 +1,10 @@
+# 0.2.0 / 2013-01-12
+
+- Removed monk dependency;
+- Replaced monk's promises with RSVP's;
+- Now using mongoskin;
+- Allow for different types of `_id` in a schema.
+
 # 0.1.5 / 2012-10-12
 
 - Don't cast the `_id` to an ObjectID by default.

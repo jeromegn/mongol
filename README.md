@@ -278,6 +278,18 @@ User.insert({}, function(error, user){
 });
 ```
 
+## Promises
+
+All constructor and instance methods are available as promises (`then`able) through [RSVP.js](https://github.com/tildeio/rsvp), with the exception of indexing methods.
+
+```javascript
+User.insert({}).then(function(doc){
+  // Do something with `doc`
+}, function(error){
+  // There was an error. Handle it already!
+});
+```
+
 ## Contributing
 
 - Find a relevant feature to add/remove/change or find a bug to fix (protip: look at the issues);

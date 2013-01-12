@@ -1,1 +1,1 @@
-module.exports = require("../../")("localhost/monastery-tests").Model
+module.exports = require("../../")("localhost/mongol-tests").Model

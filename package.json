@@ -1,19 +1,20 @@
 {
-    "name": "monastery"
+    "name": "mongol"
   , "version": "0.1.5"
   , "description": "Light modeling for MongoDB"
   , "main": "lib/index.js"
   , "scripts": {
         "test": "mocha -R spec"
     }
-  , "keywords": ["monk", "mongodb", "model", "odm", "orm", "mongo"]
-  , "repository": { "type": "git", "url": "git://github.com/jeromegn/monastery.git" }
+  , "keywords": ["mongoskin", "mongodb", "model", "odm", "orm", "mongo"]
+  , "repository": { "type": "git", "url": "git://github.com/jeromegn/mongol.git" }
   , "author": "Jerome Gravel-Niquet"
   , "license": "MIT"
 
   , "dependencies": {
-        "monk" : "~0.5.0"
-      , "async": "~0.1.22"
+        "mongoskin" : "~0.5.0"
+      , "async"     : "~0.1.22"
+      , "rsvp"      : "1.0.0"
     }
   , "devDependencies": {
         "mocha": "~1.5.0"

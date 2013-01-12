@@ -1,6 +1,6 @@
-# Monastery
+# Mongol
 
-Light modeling for MongoDB (using [monk](http://github.com/learnboost/monk)).
+Light modeling for MongoDB.
 
 You're probably face palming yourself, wondering "why... oh why another mongodb model library?". Read on.
 
@@ -8,23 +8,25 @@ You're probably face palming yourself, wondering "why... oh why another mongodb 
 
 - Simple and flexible modeling;
 - Light codebase (just enough LOC, comprehensible, etc.);
-- No schema lock-in (they're just there to ensure the right type of data gets written);
+- No schema lock-in (they're just there to ensure the right type of data gets written, if its there);
 - Prototypal inheritance.
 
 ## Install
 
-`npm install monastery`
+`npm install mongol`
 
 ## `Model`
 
 ### Initialize
 
-Create a connection to the database and get the Model constructor by requiring `monastery`.
+Create a connection to the database and get the Model constructor by requiring `mongol`.
 
 ```javascript
-var Monastery = require("monastery")("localhost/db_name");
-  , Model = Monastery.Model;
+var Mongol = require("mongol")("localhost/db_name");
+  , Model = Mongol.Model;
 ```
+
+By default, the connection has the `safe` MongoDB option set to `true`.
 
 ### Defining a `Model`
 
@@ -54,7 +56,7 @@ var User = new Model("users", {
 });
 ```
 
-*Note: As opposed to mongoose, schemas are not enforced. With an instance, you may add or remove any field present or not in the schema. Schemas' only use is typecasting.*
+*Note: As opposed to mongoose, schemas are not enforced. With an instance, you may add or remove any field present or not in the schema. Schemas' only uses is typecasting.*
 
 #### Embedded documents
 
@@ -113,9 +115,7 @@ User.insert({
 
 ### Finding, updating, removing, indexing, etc.
 
-`find`, `findOne`, `findById`, `update`, `findAndModify`, `remove`, `index`, `indexes`, `dropIndex` and `dropIndexes` are all inherited from [monk](http://github.com/learnboost/monk) and they all send back an instance of your `Model`.
-
-Furthermore, they also all return a `promise`, just like monk.
+`find`, `findOne`, `findById`, `update`, `findAndModify`, `remove`, `index`, `indexes`, `dropIndex` and `dropIndexes` are all inherited from [mongoskin](https://github.com/kissjs/node-mongoskin) and they all send back an instance of your `Model` if possible.
 
 ## Instances of your models
 
@@ -242,7 +242,7 @@ User.before("insert", function(next, done){
 
 See "hooks".
 
-`monastery` provides the basic structures for the most flexibility. Hooks are all you need for validation.
+`mongol` provides the basic structures for the most flexibility. Hooks are all you need for validation.
 
 ```javascript
 var requireName = function(){

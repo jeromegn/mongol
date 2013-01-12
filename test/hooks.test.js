@@ -1,6 +1,6 @@
 var helper = require("./helper")
   , assert = helper.assert
-  , util   = require("../lib/monastery/util")
+  , util   = require("../lib/mongol/util")
   , Model  = helper.Model;
 
 describe("Hooks", function(){
@@ -186,5 +186,96 @@ describe("Hooks", function(){
       });
     });
 
+  });
+
+  describe("after", function(){
+    var pending_insert = 0;
+
+    describe("insert", function(){
+      var x
+        , after_sync
+        , after_async
+        , after_parallel;
+
+      before(function(){
+        X.after("insert", function(){
+          after_sync = this instanceof X;
+          this.sync_after_insert = new Date();
+          pending_insert--;
+        });
+        pending_insert++;
+
+        X.after("insert", function(next){
+          after_async = this instanceof X;
+          setTimeout(function(){
+            this.async1_after_insert = new Date();
+            pending_insert--;
+            next();
+          }.bind(this), 100);
+        });
+        pending_insert++;
+
+        X.after("insert", function(next){
+          setTimeout(function(){
+            this.async2_after_insert = new Date();
+            pending_insert--;
+            next();
+          }.bind(this), 100);
+        });
+        pending_insert++;
+
+        X.after("insert", function(next, done){
+          after_parallel = this instanceof X;
+          next();
+          setTimeout(function(){
+            this.parallel1_after_insert = new Date();
+            pending_insert--;
+            done();
+          }.bind(this), 100);
+        });
+        pending_insert++;
+
+        X.after("insert", function(next, done){
+          next();
+          setTimeout(function(){
+            this.parallel2_after_insert = new Date();
+            pending_insert--;
+            done();
+          }.bind(this), 50);
+        })
+        pending_insert++;
+      });
+
+      before(function(done){
+        X.insert({}, function(error, doc){
+          x = doc;
+          setTimeout(function(){
+            done(error);
+          }, 500);
+        })
+      });
+
+      it("should have ran all the hooks", function(){
+        assert.equal(pending_insert, 0);
+      });
+      it("should have assigned the properties before inserting", function(){
+        assert.instanceOf(x.sync_after_insert, Date);
+        assert.instanceOf(x.async1_after_insert, Date);
+        assert.instanceOf(x.async2_after_insert, Date);
+        assert.instanceOf(x.parallel1_after_insert, Date);
+        assert.instanceOf(x.parallel2_after_insert, Date);
+      });
+      it("should have ran the hooks in the right order", function(){
+        assert(x.sync_after_insert < x.async1_after_insert);
+        assert(x.async1_after_insert < x.async2_after_insert);
+        assert(x.async2_after_insert < x.parallel1_after_insert);
+        assert(x.parallel1_after_insert > x.parallel2_after_insert); // Parallel 1 was longer than parallel 2
+      });
+      it("should have scoped the hook with the an instance", function(){
+        assert.isTrue(after_sync);
+        assert.isTrue(after_async);
+        assert.isTrue(after_parallel);
+      });
+    });
   });
 });

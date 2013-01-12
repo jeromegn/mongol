@@ -100,6 +100,7 @@ describe("Instance of a model", function(){
 
       before(function(done){
         c.save(function(error){
+          console.log("SAVED");
           c.reload(done);
         });
       });
@@ -115,39 +116,46 @@ describe("Instance of a model", function(){
     var M = new Model("basic", helper.schemas.basic);
 
     describe("saved instance", function(){
-      var m;
+      var m, m2;
 
       before(function(done){
         M.insert({}, function(error, doc){
           m = doc;
-          done();
+          done(error);
+        }).then(function(doc){
+          m2 = doc;
         });
       });
 
       it("should be an instance of the Model", function(){
         assert.instanceOf(m, M);
+        assert.instanceOf(m2, M);
       });
       it("should have an _id", function(){
         assert.isDefined(m._id);
+        assert.isDefined(m2._id);
       });
 
       describe("update", function(){
-        var updated;
+        var count, count2;
 
         before(function(done){
-          m.update({$set: {new_field: "yay"}}, function(error, data){
+          m.update({$set: {new_field: "yay"}}, function(error, updated){
             if (error)
               return done(error);
-            updated = data;
+            count = updated;
             m.reload(done);
+          }).then(function(updated){
+            count2 = updated;
           });
         });
 
         it("should return an instance of the model", function(){
           assert.instanceOf(m, M);
         });
-        it("should have updated one document", function(){
-          assert.isTrue(updated)
+        it("should return the count of updated documents", function(){
+          assert.equal(count, 1);
+          assert.equal(count2, 1);
         });
         it("should have the modified fields", function(){
           assert.equal(m.new_field, "yay");
@@ -252,7 +260,7 @@ describe("Instance of a model", function(){
     before(function(done){
       M.insert({}, function(error, doc){
         instance = doc;
-        M.findById(instance._id, "a", function(error, doc){
+        M.findById(instance._id, ["a"], function(error, doc){
           partial = doc;
           done(error);
         });
